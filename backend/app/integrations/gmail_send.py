@@ -11,6 +11,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from app.constants import Provider
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ def send_email(
     except RefreshError:
         logger.warning(
             "Gmail send auth error: token refresh failed",
-            extra={"provider": "gmail", "email": google_account.email},
+            extra={"provider": Provider.GMAIL, "email": google_account.email},
         )
         return "auth_error"
 
@@ -67,7 +68,7 @@ def send_email(
 
         logger.info(
             "Gmail send succeeded",
-            extra={"provider": "gmail", "email": google_account.email, "subject": subject},
+            extra={"provider": Provider.GMAIL, "email": google_account.email, "subject": subject},
         )
         return True
 
@@ -77,18 +78,18 @@ def send_email(
             logger.warning(
                 "Gmail send auth error: HTTP %s",
                 status,
-                extra={"provider": "gmail", "email": google_account.email},
+                extra={"provider": Provider.GMAIL, "email": google_account.email},
             )
             return "auth_error"
         logger.exception(
             "Gmail send failed with HTTP error",
-            extra={"provider": "gmail", "email": google_account.email, "status": status},
+            extra={"provider": Provider.GMAIL, "email": google_account.email, "status": status},
         )
         return False
 
     except Exception:
         logger.exception(
             "Gmail send failed",
-            extra={"provider": "gmail", "email": google_account.email},
+            extra={"provider": Provider.GMAIL, "email": google_account.email},
         )
         return False

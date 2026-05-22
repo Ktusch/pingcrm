@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models.user import User
@@ -130,7 +131,7 @@ async def telegram_verify(
     except Exception as exc:
         logger.exception(
             "telegram_verify raised",
-            extra={"provider": "telegram", "user_id": str(current_user.id)},
+            extra={"provider": Provider.TELEGRAM, "user_id": str(current_user.id)},
         )
         from telethon.errors import SessionPasswordNeededError  # noqa: E402
 

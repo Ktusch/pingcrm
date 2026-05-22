@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 from sqlalchemy import select
 
+from app.constants import Provider
 from app.core.config import settings
 from app.core.database import task_session
 from app.models.google_account import GoogleAccount
@@ -78,7 +79,7 @@ def scan_meeting_preps(self) -> dict:
 
                 # Check meeting_prep_enabled setting (default True)
                 sync_settings = user.sync_settings or {}
-                gmail_settings = sync_settings.get("gmail", {})
+                gmail_settings = sync_settings.get(Provider.GMAIL, {})
                 if not gmail_settings.get("meeting_prep_enabled", True):
                     skipped += 1
                     continue

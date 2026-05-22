@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.models.contact import Contact
 from app.models.interaction import Interaction
 from app.models.notification import Notification
@@ -108,7 +109,7 @@ async def refresh_contact_bios(
                         db.add(Interaction(
                             contact_id=contact.id,
                             user_id=current_user.id,
-                            platform="twitter",
+                            platform=Provider.TWITTER,
                             direction="event",
                             content_preview=f"Bio updated: {new_bio[:500]}",
                             raw_reference_id=f"bio_change:twitter:{contact.id}:{datetime.now(UTC).isoformat()}",
@@ -199,7 +200,7 @@ async def refresh_contact_bios(
                             db.add(Interaction(
                                 contact_id=contact.id,
                                 user_id=current_user.id,
-                                platform="telegram",
+                                platform=Provider.TELEGRAM,
                                 direction="event",
                                 content_preview=f"Bio updated: {new_bio[:500]}",
                                 raw_reference_id=f"bio_change:telegram:{contact.id}:{datetime.now(UTC).isoformat()}",

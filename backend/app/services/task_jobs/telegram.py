@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from celery import shared_task
 from sqlalchemy import select
 
+from app.constants import Provider
 from app.core.database import task_session
 from app.models.user import User
 from app.services.task_jobs.common import (
@@ -65,14 +66,14 @@ def sync_telegram_chats_for_user(self, user_id: str, max_dialogs: int = 100, loc
             if user is None:
                 return {"status": "user_not_found"}
 
-            sync_event = await record_sync_start(uid, "telegram", "manual" if lock_token else "scheduled", db)
+            sync_event = await record_sync_start(uid, Provider.TELEGRAM, "manual" if lock_token else "scheduled", db)
 
             try:
                 chat_result = await sync_telegram_chats(user, db, max_dialogs=max_dialogs)
             except Exception as exc:
                 logger.exception(
                     "sync_telegram_chats failed",
-                    extra={"provider": "telegram", "user_id": str(uid)},
+                    extra={"provider": Provider.TELEGRAM, "user_id": str(uid)},
                 )
                 await record_sync_failure(sync_event, str(exc), db=db)
                 await db.commit()
@@ -212,7 +213,7 @@ def sync_telegram_chats_batch_task(self, user_id: str, entity_ids: list[int], lo
             return {"status": "partial_flood_wait", "new_interactions": 0, "new_contacts": 0}
         if self.request.retries >= self.max_retries:
             _release_lock(user_id, lock_token)
-            notify_sync_failure.delay(user_id, "telegram", str(exc))
+            notify_sync_failure.delay(user_id, Provider.TELEGRAM, str(exc))
         raise self.retry(exc=exc, countdown=60) from exc
 
 
@@ -317,7 +318,7 @@ def sync_telegram_notify(user_id: str, lock_token: str = "") -> dict:
                 .select_from(Interaction)
                 .where(
                     Interaction.user_id == uid,
-                    Interaction.platform == "telegram",
+                    Interaction.platform == Provider.TELEGRAM,
                     Interaction.created_at >= one_hour_ago,
                 )
             )

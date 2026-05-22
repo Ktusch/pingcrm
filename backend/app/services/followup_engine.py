@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.models.contact import Contact
 from app.models.detected_event import DetectedEvent
 from app.models.follow_up import FollowUpSuggestion
@@ -321,7 +322,7 @@ async def _generate_suggestions_inner(
             )
             .where(
                 Interaction.contact_id.in_(all_candidate_ids),
-                Interaction.platform == "telegram",
+                Interaction.platform == Provider.TELEGRAM,
                 Interaction.direction == "outbound",
                 Interaction.is_read_by_recipient.isnot(None),
             )

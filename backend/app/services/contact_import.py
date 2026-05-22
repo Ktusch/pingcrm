@@ -12,6 +12,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.models.contact import Contact
 from app.models.interaction import Interaction
 
@@ -299,7 +300,7 @@ async def import_linkedin_connections(
                 title=position or None,
                 linkedin_url=url_normalized,
                 linkedin_profile_id=slug,
-                source="linkedin",
+                source=Provider.LINKEDIN,
             )
             db.add(contact)
             await db.flush()
@@ -413,7 +414,7 @@ async def import_linkedin_messages(
         interaction = Interaction(
             contact_id=contact.id,
             user_id=user_id,
-            platform="linkedin",
+            platform=Provider.LINKEDIN,
             direction=direction,
             content_preview=content_preview[:500],
             raw_reference_id=ref_id,

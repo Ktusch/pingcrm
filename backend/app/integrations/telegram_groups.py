@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from telethon.errors import FloodWaitError
 from telethon.tl.types import Channel, Chat, User as TelegramUser
 
+from app.constants import Provider
 from app.integrations.telegram_helpers import (
     _find_contact_by_phone,
     _find_contact_by_telegram_user_id,
@@ -167,7 +168,7 @@ async def sync_telegram_group_members(user: User, db: AsyncSession) -> dict[str,
                             full_name=full,
                             telegram_username=member.username or None,
                             phones=[member.phone] if member.phone else [],
-                            source="telegram",
+                            source=Provider.TELEGRAM,
                             tags=[tag_label],
                         ),
                     )

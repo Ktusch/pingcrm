@@ -6,6 +6,7 @@ import uuid
 from celery import shared_task
 from sqlalchemy import select
 
+from app.constants import Provider
 from app.core.database import task_session
 from app.models.contact import Contact
 from app.models.user import User
@@ -35,14 +36,14 @@ def sync_gmail_for_user(self, user_id: str) -> dict:
                 logger.warning("sync_gmail_for_user: user %s not found.", uid)
                 return {"status": "user_not_found", "new_interactions": 0}
 
-            sync_event = await record_sync_start(uid, "gmail", "scheduled", db)
+            sync_event = await record_sync_start(uid, Provider.GMAIL, "scheduled", db)
 
             try:
                 new_count = await _gmail_sync(user, db)
             except Exception as exc:
                 logger.exception(
                     "sync_gmail_for_user failed",
-                    extra={"provider": "gmail", "user_id": str(uid)},
+                    extra={"provider": Provider.GMAIL, "user_id": str(uid)},
                 )
                 await record_sync_failure(sync_event, str(exc), db=db)
                 await db.commit()

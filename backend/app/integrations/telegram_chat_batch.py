@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from telethon.errors import FloodWaitError, RPCError
 from telethon.tl.types import MessageActionPhoneCall, User as TelegramUser
 
+from app.constants import Provider
 from app.integrations.telegram_helpers import (
     _find_contact_by_phone,
     _find_contact_by_telegram_user_id,
@@ -112,7 +113,7 @@ async def sync_telegram_chats_batch(
                             full_name=full,
                             telegram_username=username or None,
                             phones=[phone] if phone else [],
-                            source="telegram",
+                            source=Provider.TELEGRAM,
                         ),
                     )
                     if created:

@@ -8,6 +8,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.models.contact import Contact
 from app.models.interaction import Interaction
 
@@ -119,7 +120,7 @@ async def resolve_contact(
         whatsapp_phone=phone,
         whatsapp_name=name,
         phones=[phone],
-        source="whatsapp",
+        source=Provider.WHATSAPP,
     )
     db.add(contact)
     return contact, True
@@ -159,7 +160,7 @@ async def upsert_whatsapp_interaction(
         id=uuid.uuid4(),
         contact_id=contact.id,
         user_id=user_id,
-        platform="whatsapp",
+        platform=Provider.WHATSAPP,
         direction=direction,
         content_preview=content_preview[:500] if content_preview else None,
         raw_reference_id=message_id,

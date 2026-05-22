@@ -6,6 +6,7 @@ import uuid
 from celery import shared_task
 from sqlalchemy import select
 
+from app.constants import Provider
 from app.core.database import task_session
 from app.models.user import User
 from app.models.notification import Notification
@@ -46,7 +47,7 @@ def sync_whatsapp_backfill(self, user_id: str) -> dict:
                 logger.info("sync_whatsapp_backfill: user %s has no WhatsApp session.", uid)
                 return {"status": "not_connected", "records_created": 0}
 
-            sync_event = await record_sync_start(uid, "whatsapp", "manual", db)
+            sync_event = await record_sync_start(uid, Provider.WHATSAPP, "manual", db)
 
             try:
                 result_data = await trigger_backfill(str(uid))
@@ -61,7 +62,7 @@ def sync_whatsapp_backfill(self, user_id: str) -> dict:
             except Exception as exc:
                 logger.exception(
                     "sync_whatsapp_backfill failed",
-                    extra={"provider": "whatsapp", "user_id": str(uid)},
+                    extra={"provider": Provider.WHATSAPP, "user_id": str(uid)},
                 )
                 await record_sync_failure(sync_event, str(exc), db=db)
                 await db.commit()

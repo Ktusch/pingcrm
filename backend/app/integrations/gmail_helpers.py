@@ -17,6 +17,7 @@ from googleapiclient.discovery import build
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.config import settings
 from app.models.contact import Contact
 
@@ -56,7 +57,7 @@ def _extract_plain_body(payload: dict) -> str:
                 except Exception:
                     logger.warning(
                         "gmail body part decode failed",
-                        extra={"provider": "gmail"},
+                        extra={"provider": Provider.GMAIL},
                         exc_info=True,
                     )
                     return None

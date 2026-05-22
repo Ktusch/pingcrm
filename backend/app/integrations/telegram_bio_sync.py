@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from telethon.errors import FloodWaitError, RPCError
 from telethon.tl.types import Channel, Chat, InputPeerUser, User as TelegramUser
 
+from app.constants import Provider
 from app.integrations.telegram_helpers import (
     _extract_twitter_handle,
     _find_contact_by_phone,
@@ -57,7 +58,7 @@ async def fetch_common_groups(
     except ValueError:
         logger.warning(
             "fetch_common_groups: StringSession decode failed",
-            extra={"provider": "telegram", "user_id": str(user.id)},
+            extra={"provider": Provider.TELEGRAM, "user_id": str(user.id)},
         )
         return [], None
     await _ensure_connected(client)
@@ -259,7 +260,7 @@ async def sync_telegram_bios(
                 db.add(Interaction(
                     contact_id=contact.id,
                     user_id=user.id,
-                    platform="telegram",
+                    platform=Provider.TELEGRAM,
                     direction="event",
                     content_preview=f"Bio updated: {current_bio[:500]}",
                     raw_reference_id=f"bio_change:telegram:{contact.id}:{datetime.now(UTC).isoformat()}",

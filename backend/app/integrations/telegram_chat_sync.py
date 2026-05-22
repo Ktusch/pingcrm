@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from telethon.errors import FloodWaitError, RPCError
 from telethon.tl.types import MessageActionPhoneCall, User as TelegramUser
 
+from app.constants import Provider
 from app.integrations.telegram_helpers import (
     _find_contact_by_phone,
     _find_contact_by_telegram_user_id,
@@ -133,7 +134,7 @@ async def sync_telegram_chats(user: User, db: AsyncSession, *, max_dialogs: int 
                         full_name=full,
                         telegram_username=entity.username or None,
                         phones=[entity.phone] if entity.phone else [],
-                        source="telegram",
+                        source=Provider.TELEGRAM,
                     ),
                 )
                 if created:
@@ -153,7 +154,7 @@ async def sync_telegram_chats(user: User, db: AsyncSession, *, max_dialogs: int 
                     .where(
                         Interaction.contact_id == contact.id,
                         Interaction.user_id == user.id,
-                        Interaction.platform == "telegram",
+                        Interaction.platform == Provider.TELEGRAM,
                         Interaction.direction == "outbound",
                         Interaction.is_read_by_recipient.is_not(True),
                         Interaction.raw_reference_id.isnot(None),
@@ -165,13 +166,13 @@ async def sync_telegram_chats(user: User, db: AsyncSession, *, max_dialogs: int 
                     logger.info(
                         "read_receipts: marked %d interaction(s) as read for contact %s (read_outbox_max_id=%d)",
                         update_result.rowcount, contact.id, read_outbox_max_id,
-                        extra={"provider": "telegram", "contact_id": str(contact.id)},
+                        extra={"provider": Provider.TELEGRAM, "contact_id": str(contact.id)},
                     )
             elif contact:
                 logger.debug(
                     "read_receipts: no read_outbox_max_id for contact %s (dialog.dialog=%r)",
                     contact.id, getattr(dialog, "dialog", None),
-                    extra={"provider": "telegram", "contact_id": str(contact.id)},
+                    extra={"provider": Provider.TELEGRAM, "contact_id": str(contact.id)},
                 )
 
             # Queue avatar download for after main sync loop

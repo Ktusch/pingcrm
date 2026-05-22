@@ -8,6 +8,7 @@ import httpx
 from celery import shared_task
 from sqlalchemy import select
 
+from app.constants import Provider
 from app.core.database import task_session
 from app.models.contact import Contact
 from app.models.user import User
@@ -102,7 +103,7 @@ def sync_twitter_dms_for_user(self, user_id: str) -> dict:
                 return {"status": "skipped", "reason": "no_twitter_token", "new_interactions": 0}
 
             from app.services.sync_history import record_sync_start, record_sync_complete, record_sync_failure
-            sync_event = await record_sync_start(uid, "twitter", "scheduled", db)
+            sync_event = await record_sync_start(uid, Provider.TWITTER, "scheduled", db)
 
             id_map = await _build_twitter_id_to_contact_map(user, db, headers)
 
@@ -252,6 +253,6 @@ def refresh_contact_twitter_bio(self, user_id: str, contact_id: str) -> dict:
     except Exception as exc:
         logger.exception(
             "refresh_contact_twitter_bio failed",
-            extra={"provider": "twitter", "user_id": user_id, "contact_id": contact_id},
+            extra={"provider": Provider.TWITTER, "user_id": user_id, "contact_id": contact_id},
         )
         raise self.retry(exc=exc, countdown=120) from exc

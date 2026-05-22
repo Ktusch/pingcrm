@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models.user import User
@@ -124,10 +125,10 @@ class SyncSettingsData(BaseModel):
 
 
 _DEFAULT_SYNC_SETTINGS: dict[str, dict] = {
-    "telegram": {"auto_sync": True, "schedule": "daily"},
-    "gmail": {"auto_sync": True, "schedule": "6h"},
-    "twitter": {"auto_sync": True, "schedule": "daily"},
-    "linkedin": {"auto_sync": False, "schedule": "manual"},
+    Provider.TELEGRAM: {"auto_sync": True, "schedule": "daily"},
+    Provider.GMAIL: {"auto_sync": True, "schedule": "6h"},
+    Provider.TWITTER: {"auto_sync": True, "schedule": "daily"},
+    Provider.LINKEDIN: {"auto_sync": False, "schedule": "manual"},
 }
 
 

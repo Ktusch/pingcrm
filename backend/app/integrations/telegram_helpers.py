@@ -8,6 +8,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.models.contact import Contact
 from app.models.interaction import Interaction
 
@@ -145,7 +146,7 @@ async def _upsert_interaction(
         id=uuid.uuid4(),
         contact_id=contact.id,
         user_id=user_id,
-        platform="telegram",
+        platform=Provider.TELEGRAM,
         direction=direction,
         content_preview=content_preview[:500] if content_preview else None,
         raw_reference_id=message_id,

@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.auth import get_extension_or_web_user
 from app.core.database import get_db
 from app.models.contact import Contact
@@ -114,7 +115,7 @@ async def push_meta_data(
     # --- Profiles ---
     for profile in body.profiles:
         # Look up by platform-specific ID
-        if platform == "instagram":
+        if platform == Provider.INSTAGRAM:
             contact = ig_id_map.get(profile.platform_id)
         else:
             contact = fb_id_map.get(profile.platform_id)
@@ -122,7 +123,7 @@ async def push_meta_data(
         if contact:
             # Update existing contact
             sync_set_field(contact, "full_name", profile.name)
-            if platform == "facebook":
+            if platform == Provider.FACEBOOK:
                 contact.facebook_name = profile.name
                 if not contact.facebook_id:
                     contact.facebook_id = profile.platform_id
@@ -144,7 +145,7 @@ async def push_meta_data(
                 given_name=name_parts[0] if name_parts else None,
                 family_name=name_parts[1] if len(name_parts) > 1 else None,
             )
-            if platform == "facebook":
+            if platform == Provider.FACEBOOK:
                 contact.facebook_id = profile.platform_id
                 contact.facebook_name = profile.name
                 if profile.avatar_url:
@@ -159,7 +160,7 @@ async def push_meta_data(
             contacts_created += 1
 
             # Update in-memory maps
-            if platform == "facebook":
+            if platform == Provider.FACEBOOK:
                 fb_id_map[profile.platform_id] = contact
             else:
                 ig_id_map[profile.platform_id] = contact
@@ -185,7 +186,7 @@ async def push_meta_data(
         # Find contact using in-memory maps
         contact = None
         if msg.platform_id:
-            if platform == "instagram":
+            if platform == Provider.INSTAGRAM:
                 contact = ig_id_map.get(msg.platform_id)
             else:
                 contact = fb_id_map.get(msg.platform_id)
@@ -195,10 +196,10 @@ async def push_meta_data(
             contact = name_map.get(msg.sender_name.lower())
             if contact and msg.platform_id:
                 # Backfill platform ID on matched contact
-                if platform == "facebook" and not contact.facebook_id:
+                if platform == Provider.FACEBOOK and not contact.facebook_id:
                     contact.facebook_id = msg.platform_id
                     fb_id_map[msg.platform_id] = contact
-                elif platform == "instagram" and not contact.instagram_id:
+                elif platform == Provider.INSTAGRAM and not contact.instagram_id:
                     contact.instagram_id = msg.platform_id
                     ig_id_map[msg.platform_id] = contact
 
@@ -211,7 +212,7 @@ async def push_meta_data(
                 given_name=name_parts[0] if name_parts else None,
                 family_name=name_parts[1] if len(name_parts) > 1 else None,
             )
-            if platform == "facebook":
+            if platform == Provider.FACEBOOK:
                 contact.facebook_id = msg.platform_id
             else:
                 contact.instagram_id = msg.platform_id
@@ -221,7 +222,7 @@ async def push_meta_data(
 
             # Update in-memory maps
             if msg.platform_id:
-                if platform == "facebook":
+                if platform == Provider.FACEBOOK:
                     fb_id_map[msg.platform_id] = contact
                 else:
                     ig_id_map[msg.platform_id] = contact
@@ -324,7 +325,7 @@ async def push_meta_data(
         if contact.id in seen_ids:
             continue
         seen_ids.add(contact.id)
-        pid = contact.facebook_id if platform == "facebook" else contact.instagram_id
+        pid = contact.facebook_id if platform == Provider.FACEBOOK else contact.instagram_id
         if pid and not contact.avatar_url:
             backfill_needed.append(
                 MetaBackfillItem(

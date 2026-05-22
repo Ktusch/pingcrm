@@ -14,6 +14,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.config import settings
 from app.integrations.twitter_contacts import (
     _build_twitter_id_to_contact_map,
@@ -184,7 +185,7 @@ async def poll_contacts_activity(
             db.add(Interaction(
                 contact_id=contact.id,
                 user_id=user.id,
-                platform="twitter",
+                platform=Provider.TWITTER,
                 direction="event",
                 content_preview=f"Bio updated: {current_bio[:500]}",
                 raw_reference_id=f"bio_change:twitter:{contact.id}:{datetime.now(UTC).isoformat()}",
@@ -237,7 +238,7 @@ async def sync_twitter_mentions(
         logger.error(
             "sync_twitter_mentions: bird CLI unavailable for user %s",
             user.id,
-            extra={"provider": "twitter", "operation": "mentions"},
+            extra={"provider": Provider.TWITTER, "operation": "mentions"},
         )
         from app.models.notification import Notification
         db.add(Notification(
@@ -314,7 +315,7 @@ async def sync_twitter_mentions(
         interaction = Interaction(
             contact_id=contact.id,
             user_id=user.id,
-            platform="twitter",
+            platform=Provider.TWITTER,
             direction="inbound",
             content_preview=text[:500] if text else "",
             raw_reference_id=f"twitter_mention:{tweet_id}",
@@ -360,7 +361,7 @@ async def sync_twitter_replies(
         logger.error(
             "sync_twitter_replies: bird CLI unavailable for user %s",
             user.id,
-            extra={"provider": "twitter", "operation": "replies"},
+            extra={"provider": Provider.TWITTER, "operation": "replies"},
         )
         from app.models.notification import Notification
         db.add(Notification(
@@ -436,7 +437,7 @@ async def sync_twitter_replies(
         interaction = Interaction(
             contact_id=contact.id,
             user_id=user.id,
-            platform="twitter",
+            platform=Provider.TWITTER,
             direction="outbound",
             content_preview=text[:500] if text else "",
             raw_reference_id=f"twitter_reply:{tweet_id}",

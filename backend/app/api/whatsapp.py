@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.auth import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
@@ -77,7 +78,7 @@ async def whatsapp_connect(
     except Exception:
         logger.exception(
             "whatsapp_connect failed",
-            extra={"provider": "whatsapp", "user_id": str(current_user.id)},
+            extra={"provider": Provider.WHATSAPP, "user_id": str(current_user.id)},
         )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -102,7 +103,7 @@ async def whatsapp_get_qr(
     except Exception:
         logger.exception(
             "whatsapp_get_qr failed",
-            extra={"provider": "whatsapp", "user_id": str(current_user.id)},
+            extra={"provider": Provider.WHATSAPP, "user_id": str(current_user.id)},
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -127,7 +128,7 @@ async def whatsapp_get_status(
     except Exception:
         logger.exception(
             "whatsapp_get_status failed",
-            extra={"provider": "whatsapp", "user_id": str(current_user.id)},
+            extra={"provider": Provider.WHATSAPP, "user_id": str(current_user.id)},
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -174,7 +175,7 @@ async def whatsapp_disconnect(
     except Exception:
         logger.warning(
             "whatsapp_disconnect: destroy_session failed (proceeding with local clear)",
-            extra={"provider": "whatsapp", "user_id": str(current_user.id)},
+            extra={"provider": Provider.WHATSAPP, "user_id": str(current_user.id)},
             exc_info=True,
         )
 
@@ -236,7 +237,7 @@ async def whatsapp_webhook(
             "whatsapp_webhook: unknown user_id %s for event %s",
             user_id_str,
             event_type,
-            extra={"provider": "whatsapp", "user_id": user_id_str},
+            extra={"provider": Provider.WHATSAPP, "user_id": user_id_str},
         )
         return {"data": {"received": True}, "error": None}
 
@@ -289,14 +290,14 @@ async def whatsapp_webhook(
             except Exception:
                 logger.exception(
                     "whatsapp_webhook: score recalc failed",
-                    extra={"provider": "whatsapp", "contact_id": str(contact.id)},
+                    extra={"provider": Provider.WHATSAPP, "contact_id": str(contact.id)},
                 )
 
     else:
         logger.warning(
             "whatsapp_webhook: unknown event type %s",
             event_type,
-            extra={"provider": "whatsapp", "user_id": user_id_str},
+            extra={"provider": Provider.WHATSAPP, "user_id": user_id_str},
         )
 
     return {"data": {"received": True}, "error": None}
@@ -318,7 +319,7 @@ async def _handle_message(
     if not raw_phone:
         logger.warning(
             "whatsapp_webhook: message missing sender phone",
-            extra={"provider": "whatsapp", "user_id": str(user.id)},
+            extra={"provider": Provider.WHATSAPP, "user_id": str(user.id)},
         )
         return
 
@@ -328,7 +329,7 @@ async def _handle_message(
         logger.warning(
             "whatsapp_webhook: could not normalize phone %r",
             raw_phone,
-            extra={"provider": "whatsapp", "user_id": str(user.id)},
+            extra={"provider": Provider.WHATSAPP, "user_id": str(user.id)},
             exc_info=True,
         )
         return
@@ -364,5 +365,5 @@ async def _handle_message(
         except Exception:
             logger.exception(
                 "whatsapp_webhook: score calc failed",
-                extra={"provider": "whatsapp", "contact_id": str(contact.id)},
+                extra={"provider": Provider.WHATSAPP, "contact_id": str(contact.id)},
             )

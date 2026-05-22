@@ -13,6 +13,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.integrations.twitter_auth import (
     _refresh_and_retry,
     _user_bearer_headers,
@@ -217,7 +218,7 @@ async def sync_twitter_dms(
         interaction = Interaction(
             contact_id=contact.id,
             user_id=user.id,
-            platform="twitter",
+            platform=Provider.TWITTER,
             direction=direction,
             content_preview=text[:500] if text else "",
             raw_reference_id=ref_id,
@@ -243,7 +244,7 @@ async def sync_twitter_dms(
                     family_name=parts[1] if len(parts) > 1 else None,
                     full_name=name or username or None,
                     twitter_handle=username or None,
-                    source="twitter",
+                    source=Provider.TWITTER,
                 ),
             )
             if created:
@@ -259,7 +260,7 @@ async def sync_twitter_dms(
                 interaction = Interaction(
                     contact_id=contact.id,
                     user_id=user.id,
-                    platform="twitter",
+                    platform=Provider.TWITTER,
                     direction=direction,
                     content_preview=(ev.get("text", "") or "")[:500],
                     raw_reference_id=f"twitter_dm:{ev_id}",
@@ -415,7 +416,7 @@ async def sync_twitter_contact_dms(
         interaction = Interaction(
             contact_id=contact.id,
             user_id=user.id,
-            platform="twitter",
+            platform=Provider.TWITTER,
             direction=direction,
             content_preview=text[:500] if text else "",
             raw_reference_id=f"twitter_dm:{event_id}",

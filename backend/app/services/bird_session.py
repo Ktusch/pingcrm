@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.integrations.bird import verify_cookies
 from app.models.notification import Notification
 from app.models.user import User
@@ -52,7 +53,7 @@ async def handle_bird_failure(
         logger.warning(
             "bird %s failed for user %s (already verified this run): %s",
             operation, user.id, error,
-            extra={"provider": "twitter", "operation": operation},
+            extra={"provider": Provider.TWITTER, "operation": operation},
         )
         return
 
@@ -70,7 +71,7 @@ async def handle_bird_failure(
         logger.warning(
             "bird %s failed for user %s but whoami succeeded (transient): %s",
             operation, user.id, error,
-            extra={"provider": "twitter", "operation": operation},
+            extra={"provider": Provider.TWITTER, "operation": operation},
         )
         return
 

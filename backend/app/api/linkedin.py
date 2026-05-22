@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.constants import Provider
 from app.core.auth import get_extension_or_web_user
 from app.core.database import get_db
 from app.integrations.linkedin import download_linkedin_avatar
@@ -287,7 +288,7 @@ async def push_linkedin_data(
         interaction = Interaction(
             contact_id=contact.id,
             user_id=current_user.id,
-            platform="linkedin",
+            platform=Provider.LINKEDIN,
             direction=msg.direction if msg.direction in ("inbound", "outbound") else "inbound",
             content_preview=msg.content_preview[:500] if msg.content_preview else None,
             raw_reference_id=raw_ref,
@@ -316,7 +317,7 @@ async def push_linkedin_data(
     # Record sync event for LinkedIn push
     if contacts_created + contacts_updated + interactions_created > 0:
         from app.services.sync_history import record_sync_start, record_sync_complete
-        sync_event = await record_sync_start(current_user.id, "linkedin", "webhook", db)
+        sync_event = await record_sync_start(current_user.id, Provider.LINKEDIN, "webhook", db)
         await record_sync_complete(
             sync_event,
             records_created=contacts_created + interactions_created,
