@@ -21,18 +21,18 @@ def _has_json_logger() -> bool:
 
 
 
-def _make_file_handler() -> "logging.Handler":
+def _make_file_handler(filename=None, maxBytes=10485760, backupCount=5, encoding="utf-8", **kwargs) -> "logging.Handler":
     """Factory that gracefully falls back to a no-op handler."""
     try:
         log_dir = Path(__file__).resolve().parent.parent.parent / "logs"
         log_dir.mkdir(exist_ok=True)
-        log_file = str(log_dir / "pingcrm.log")
+        log_file = filename or str(log_dir / "pingcrm.log")
         from logging.handlers import RotatingFileHandler
         return RotatingFileHandler(
             filename=log_file,
-            maxBytes=10_485_760,
-            backupCount=5,
-            encoding="utf-8",
+            maxBytes=maxBytes or 10_485_760,
+            backupCount=backupCount or 5,
+            encoding=encoding or "utf-8",
         )
     except (OSError, PermissionError):
         return logging.NullHandler()
