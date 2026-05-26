@@ -15,7 +15,7 @@ services:
       - tcp_keepalives_count=6
     environment:
       POSTGRES_USER: pingcrm
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: pingcrm
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -35,18 +35,19 @@ services:
 
   backend:
     build: ./backend
-    env_file:
-      - ./backend/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://pingcrm:${POSTGRES_PASSWORD}@postgres:5432/pingcrm
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
+      SECRET_KEY: ${SECRET_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      ENVIRONMENT: production
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       TWITTER_CLIENT_ID: ${TWITTER_CLIENT_ID:-}
       TWITTER_CLIENT_SECRET: ${TWITTER_CLIENT_SECRET:-}
-      TELEGRAM_API_ID: ${TELEGRAM_API_ID:-}
+      TELEGRAM_API_ID: ${TELEGRAM_API_ID:-0}
       TELEGRAM_API_HASH: ${TELEGRAM_API_HASH:-}
       AUTH_TOKEN: ${AUTH_TOKEN:-}
       CT0: ${CT0:-}
@@ -68,18 +69,19 @@ services:
   worker:
     build: ./backend
     command: celery -A worker.celery_app worker --beat --loglevel=info
-    env_file:
-      - ./backend/.env
     environment:
       DATABASE_URL: postgresql+asyncpg://pingcrm:${POSTGRES_PASSWORD}@postgres:5432/pingcrm
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
+      SECRET_KEY: ${SECRET_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      ENVIRONMENT: production
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       TWITTER_CLIENT_ID: ${TWITTER_CLIENT_ID:-}
       TWITTER_CLIENT_SECRET: ${TWITTER_CLIENT_SECRET:-}
-      TELEGRAM_API_ID: ${TELEGRAM_API_ID:-}
+      TELEGRAM_API_ID: ${TELEGRAM_API_ID:-0}
       TELEGRAM_API_HASH: ${TELEGRAM_API_HASH:-}
       AUTH_TOKEN: ${AUTH_TOKEN:-}
       CT0: ${CT0:-}
@@ -96,7 +98,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: http://backend:8000
     ports:
-      - "3000:3000"
+      - "3100:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://backend:8000
     depends_on:
@@ -106,3 +108,4 @@ services:
 volumes:
   pgdata:
   avatars:
+
