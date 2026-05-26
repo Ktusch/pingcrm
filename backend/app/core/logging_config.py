@@ -20,6 +20,24 @@ def _has_json_logger() -> bool:
         return False
 
 
+
+def _make_file_handler() -> "logging.Handler":
+    """Factory that gracefully falls back to a no-op handler."""
+    try:
+        log_dir = Path(__file__).resolve().parent.parent.parent / "logs"
+        log_dir.mkdir(exist_ok=True)
+        log_file = str(log_dir / "pingcrm.log")
+        from logging.handlers import RotatingFileHandler
+        return RotatingFileHandler(
+            filename=log_file,
+            maxBytes=10_485_760,
+            backupCount=5,
+            encoding="utf-8",
+        )
+    except (OSError, PermissionError):
+        return logging.NullHandler()
+
+
 def setup_logging() -> None:
     """Configure structured JSON logging for the application.
 
@@ -66,7 +84,7 @@ def setup_logging() -> None:
                 "stream": "ext://sys.stdout",
             },
             "file": {
-                "class": "logging.handlers.RotatingFileHandler",
+                "()": "app.core.logging_config._make_file_handler",
                 "formatter": fmt_name,
                 "filename": log_file,
                 "maxBytes": 10_485_760,  # 10 MB
